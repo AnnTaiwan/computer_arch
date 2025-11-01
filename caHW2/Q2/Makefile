@@ -18,7 +18,7 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 
 OBJS = start.o main.o perfcounter.o chacha20_asm.o q1-uf8_rv32.o
 
-.PHONY: all run dump clean
+.PHONY: all run dump dump2 clean
 
 all: $(EXEC)
 
@@ -39,6 +39,9 @@ run: $(EXEC)
 
 dump: $(EXEC)
 	$(OBJDUMP) -Ds $< | less
+
+dump2: $(EXEC)
+	$(OBJDUMP) -D $< | less
 
 clean:
 	rm -f $(EXEC) $(OBJS)
