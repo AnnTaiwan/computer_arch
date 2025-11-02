@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-
 #define printstr(ptr, length)                   \
     do {                                        \
         asm volatile(                           \
@@ -14,9 +13,7 @@
             : "r"(ptr), "r"(length)             \
             : "a0", "a1", "a2", "a7");          \
     } while (0)
-
 #define TEST_OUTPUT(msg, length) printstr(msg, length)
-
 #define TEST_LOGGER(msg)                     \
     {                                        \
         char _msg[] = msg;                   \
@@ -97,6 +94,7 @@ uint32_t __mulsi3(uint32_t a, uint32_t b)
 }
 
 /* Simple integer to hex string conversion */
+__attribute__((optimize("O0")))
 static void print_hex(unsigned long val)
 {
     char buf[20];
@@ -121,6 +119,7 @@ static void print_hex(unsigned long val)
 }
 
 /* Simple integer to decimal string conversion */
+__attribute__((optimize("O0")))
 static void print_dec(unsigned long val)
 {
     char buf[20];

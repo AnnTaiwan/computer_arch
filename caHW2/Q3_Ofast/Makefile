@@ -7,7 +7,7 @@ LINKER_SCRIPT = linker.ld
 EMU ?= $(BASE_ADDR)/build/rv32emu
 
 AFLAGS = -g $(ARCH)
-CFLAGS = -g -march=rv32i_zicsr
+CFLAGS = -g -march=rv32i_zicsr -Ofast
 LDFLAGS = -T $(LINKER_SCRIPT)
 EXEC = test.elf
 

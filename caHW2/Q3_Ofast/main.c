@@ -95,7 +95,7 @@ uint32_t __mulsi3(uint32_t a, uint32_t b)
 {
     return umul(a, b);
 }
-
+__attribute__((optimize("O0")))
 /* Simple integer to hex string conversion */
 static void print_hex(unsigned long val)
 {
@@ -119,7 +119,7 @@ static void print_hex(unsigned long val)
     p++;
     printstr(p, (buf + sizeof(buf) - p));
 }
-
+__attribute__((optimize("O0")))
 /* Simple integer to decimal string conversion */
 static void print_dec(unsigned long val)
 {
