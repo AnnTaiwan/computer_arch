@@ -1,4 +1,4 @@
-BASE_ADDR = /home/chou/rv32emu
+BASE_ADDR = /home/chouan/rv32emu
 include $(BASE_ADDR)/mk/toolchain.mk
 
 ARCH = -march=rv32izicsr
@@ -16,7 +16,7 @@ AS = $(CROSS_COMPILE)as
 LD = $(CROSS_COMPILE)ld
 OBJDUMP = $(CROSS_COMPILE)objdump
 
-OBJS = start.o main.o perfcounter.o q2A_toh_v1.o q2A_toh_v2.o
+OBJS = start.o main.o perfcounter.o q2A_toh_v1.o q2A_toh_v2.o fast_rsqrt.o
 
 .PHONY: all run dump dump2 store_dump clean
 

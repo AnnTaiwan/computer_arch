@@ -1,4 +1,4 @@
-BASE_ADDR = /home/chou/rv32emu
+BASE_ADDR = /home/chouan/rv32emu
 include $(BASE_ADDR)/mk/toolchain.mk
 
 ARCH = -march=rv32izicsr

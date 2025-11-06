@@ -1,0 +1,46 @@
+/home/chouan/rv32emu/build/rv32emu test.elf
+02:21:05 [32mINFO [0m [90msrc/riscv.c:552:[0m Log level: TRACE
+02:21:05 [32mINFO [0m [90msrc/riscv.c:565:[0m test.elf ELF loaded
+02:21:05 [32mINFO [0m [90msrc/main.c:315:[0m RISC-V emulator is created and ready to run
+
+=== tower of hanoi Tests ===
+
+Test 1: play_toh_v1 (RISC-V Assembly) => Original code from Q2-A. Only adjust the print format.
+Move Disk 1 from A to C
+Move Disk 2 from A to B
+Move Disk 1 from C to B
+Move Disk 3 from A to C
+Move Disk 1 from B to A
+Move Disk 2 from B to C
+Move Disk 1 from A to C
+  Cycles: 685
+  Instructions: 685
+
+Test 2: play_toh_v2 (RISC-V Assembly) => Handwritten assembly code adapted from Q2-A.
+Move Disk 1 from A to C
+Move Disk 2 from A to B
+Move Disk 1 from C to B
+Move Disk 3 from A to C
+Move Disk 1 from B to A
+Move Disk 2 from B to C
+Move Disk 1 from A to C
+  Cycles: 533
+  Instructions: 533
+
+Test 3: fast_rsqrt (C code) from Q3-C.
+Test: fast_rsqrt
+In below error percentage, it might lose fractional part of error in pecentage due to udiv, so show the remainder to see.
+	fast_rsqrt(1) = 65536 (exact: 65536), Approximately Error = 0%, Remainder = 0/655360,	Cycles: 61, Instructions: 61
+	fast_rsqrt(4) = 32768 (exact: 32768), Approximately Error = 0%, Remainder = 0/327680,	Cycles: 1447, Instructions: 1447
+	fast_rsqrt(16) = 16384 (exact: 16384), Approximately Error = 0%, Remainder = 0/163840,	Cycles: 91, Instructions: 91
+	fast_rsqrt(20) = 14625 (exact: 14654.2), Approximately Error = 0%, Remainder = 29200/146542,	Cycles: 377, Instructions: 377
+	fast_rsqrt(100) = 6534 (exact: 6553.6), Approximately Error = 0%, Remainder = 19600/65536,	Cycles: 110, Instructions: 110
+	fast_rsqrt(258) = 4080 (exact: 4080), Approximately Error = 0%, Remainder = 0/40800,	Cycles: 116, Instructions: 116
+	fast_rsqrt(650) = 2564 (exact: 2570.5), Approximately Error = 0%, Remainder = 6500/25705,	Cycles: 113, Instructions: 113
+  fast_rsqrt: PASSED
+ Total Cycles: 201387
+ Total Instructions: 201387
+
+
+=== All Tests Completed ===
+02:21:05 [32mINFO [0m [90msrc/main.c:338:[0m RISC-V emulator is destroyed
