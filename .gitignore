@@ -1,4 +1,3 @@
 *.o
 *.elf
-dump_result
-dump2_result
+dump*
