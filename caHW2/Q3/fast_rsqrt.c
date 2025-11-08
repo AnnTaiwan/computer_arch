@@ -48,9 +48,10 @@ uint32_t fast_rsqrt(uint32_t x)
         uint32_t frac = (uint32_t)((((uint64_t)x - (1UL << exp)) << 16) >> exp); // let frac be Q16.16
 
         y -= (uint32_t)((delta * frac) >> 16); // scale down to  Q16.16
+        // y -= (uint32_t)(mul32(delta, frac) >> 16); // scale down to  Q16.16
     }
     /* Newton-Raphson Iteration */
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 2; i++)
     {
         uint32_t y2 = (uint32_t)mul32(y, y); 
         uint32_t xy2 = (uint32_t)(mul32(x, y2) >> 16);// scale down back to Q16.16

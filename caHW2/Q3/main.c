@@ -172,6 +172,7 @@ static uint32_t str_len(const char *s)
 /* ============= Tower of Hanoi Declaration ============= */
 extern uint32_t play_toh_v1(void);
 extern uint32_t play_toh_v2(void);
+extern uint32_t play_toh_v3(void);
 /* ============= Test Suite ============= */
 static void test_play_toh_v1(void)
 {
@@ -182,6 +183,11 @@ static void test_play_toh_v2(void)
 {
     // start to play
     uint32_t ret =  play_toh_v2();
+}
+static void test_play_toh_v3(void)
+{
+    // start to play
+    uint32_t ret =  play_toh_v3();
 }
 /* ============= fast_rsqrt declarations ============= */
 // fast_rsqrt is written in fast_rsqrt.c
@@ -228,7 +234,7 @@ static void test_fast_rsqrt(void)
         "4080",
         "2570.5"
     };
-    uint32_t exact_values[] = { // multiply 10 for one-position fractional part
+    uint32_t exact_values[] = { // multiply 10 for saving one-position fractional part
         655360, // 65536 * 10
         327680,
         163840,
@@ -304,8 +310,26 @@ int main(void)
     print_dec((unsigned long) instret_elapsed);
     TEST_LOGGER("\n");
 
-    /* Test 3: fast_rsqrt */
-    TEST_LOGGER("Test 3: fast_rsqrt (C code) from Q3-C.\n");
+    /* Test 3: play_toh_v3 */
+    TEST_LOGGER("Test 3: play_toh_v3 (RISC-V Assembly) => Handwritten assembly code adapted from Q2-A. Version 3: Improvement!!\n");
+    start_cycles = get_cycles();
+    start_instret = get_instret();
+
+    test_play_toh_v3();
+
+    end_cycles = get_cycles();
+    end_instret = get_instret();
+    cycles_elapsed = end_cycles - start_cycles;
+    instret_elapsed = end_instret - start_instret;
+
+    TEST_LOGGER("  Cycles: ");
+    print_dec((unsigned long) cycles_elapsed);
+    TEST_LOGGER("  Instructions: ");
+    print_dec((unsigned long) instret_elapsed);
+    TEST_LOGGER("\n");
+
+    /* Test 4: fast_rsqrt */
+    TEST_LOGGER("Test 4: fast_rsqrt (C code) from Q3-C.\n");
     start_cycles = get_cycles();
     start_instret = get_instret();
 
