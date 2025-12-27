@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "newlib.h"
-#define CODE_OPT_VER 1
+#define CODE_OPT_VER 2
 extern uint64_t get_cycles(void);
 extern uint64_t get_instret(void);
 

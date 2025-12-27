@@ -316,6 +316,7 @@ static inline uint _rs_mul(uint x, uint y)
             So, calculate the a3 << 2,3,4,8 and sum them.
         */
         "  srli a3, t0, 7\n"      /* a3 = z >> 7 */
+        "  beqz a3, .Lskip_mul\n" /* if (z >> 7) == 0, skip multiplication */
         "  mv a4, a3\n"           /* a4 = a3 (bit 0) */
         "  slli t3, a3, 2\n"      /* t3 = a3 << 2 (bit 2) */
         "  add a4, a4, t3\n"
@@ -325,9 +326,11 @@ static inline uint _rs_mul(uint x, uint y)
         "  add a4, a4, t3\n"
         "  slli t3, a3, 8\n"      /* t3 = a3 << 8 (bit 8) */
         "  add a4, a4, t3\n"      /* a4 = (z >> 7) * 0x11D */
-        
         "  xor t0, a2, a4\n"      /* z = (z << 1) ^ ((z >> 7) * 0x11D) */
-        
+        "  j .Lmul_end\n"
+        ".Lskip_mul:\n"
+        "  mv t0, a2\n"             /* let t0 be (z << 1)*/
+        ".Lmul_end:\n"
         /* Calculate ((y >> i) & 1) * x 
             (y >> i) & 1 must be 1 or 0, so it is simple to do this multiplication
             Just check if it is 1, if true, do the xor.
