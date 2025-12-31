@@ -69,5 +69,10 @@ test-threads:
 	@echo "=== Testing with 8 threads ==="
 	@$(MAKE) clean && $(MAKE) NTHREADS=8 run
 
+perf_false_sharing: all
+	perf stat ./$(TARGET_FALSE_SHARING)
+perf_non_false_sharing: all
+	perf stat ./$(TARGET_NO_FALSE_SHARING)
+
 clean:
 	rm -f $(TARGET_FALSE_SHARING) $(TARGET_NO_FALSE_SHARING)
