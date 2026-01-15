@@ -16,7 +16,7 @@ AS = $(CROSS_COMPILE)as
 LD = $(CROSS_COMPILE)ld
 OBJDUMP = $(CROSS_COMPILE)objdump
 
-OBJS = start.o main.o perfcounter.o newlib.o qrcode.o qrcode_opt_v1.o qrcode_opt_v2.o
+OBJS = start.o main.o perfcounter.o newlib.o qrcode.o qrcode_opt_v1.o qrcode_opt_v2.o qrcode_opt_v3.o
 
 .PHONY: all run dump dump2 store_dump clean
 

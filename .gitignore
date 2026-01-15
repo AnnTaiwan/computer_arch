@@ -1,3 +1,7 @@
 *.o
 *.elf
 dump*
+rv32*.txt
+mycpu*.txt
+junk.txt
+qrcode

@@ -156,7 +156,7 @@ int puts(const char *s)
     return len + 1;
 }
 
-/* Simple sprintf for integer formatting (supports %d only) */
+/* Simple sprintf for integer formatting (supports %d and %X) */
 int sprintf(char *str, const char *format, ...)
 {
     char *dst = str;
@@ -172,43 +172,81 @@ int sprintf(char *str, const char *format, ...)
     va_start(args, format);
     
     while (*fmt) {
-        if (*fmt == '%' && *(fmt + 1) == 'd') {
-            /* Handle %d format specifier */
-            int val = va_arg(args, int);
-            char buf[12];
-            char *p = buf + sizeof(buf) - 1;
-            *p = '\0';
-            p--;
-            
-            int is_negative = 0;
-            if (val < 0) {
-                is_negative = 1;
-                val = -val;
-            }
-            
-            if (val == 0) {
-                *p = '0';
+        if (*fmt == '%') {
+            if (*(fmt + 1) == 'd') {
+                /* Handle %d format specifier (decimal) */
+                int val = va_arg(args, int);
+                char buf[12];
+                char *p = buf + sizeof(buf) - 1;
+                *p = '\0';
                 p--;
-            } else {
-                while (val > 0) {
-                    *p = '0' + umod(val, 10);
-                    p--;
-                    val = udiv(val, 10);
+                
+                int is_negative = 0;
+                if (val < 0) {
+                    is_negative = 1;
+                    val = -val;
                 }
-            }
-            
-            if (is_negative) {
-                *p = '-';
+                
+                if (val == 0) {
+                    *p = '0';
+                    p--;
+                } else {
+                    while (val > 0) {
+                        *p = '0' + umod(val, 10);
+                        p--;
+                        val = udiv(val, 10);
+                    }
+                }
+                
+                if (is_negative) {
+                    *p = '-';
+                    p--;
+                }
+                
+                p++;
+                /* Copy to destination */
+                while (*p) {
+                    *dst++ = *p++;
+                }
+                
+                fmt += 2;
+            } else if (*(fmt + 1) == 'X' || *(fmt + 1) == 'x') {
+                /* Handle %X/%x format specifier (hexadecimal uppercase/lowercase) */
+                unsigned int val = va_arg(args, unsigned int);
+                char buf[12];
+                char *p = buf + sizeof(buf) - 1;
+                *p = '\0';
                 p--;
+                
+                int use_uppercase = (*(fmt + 1) == 'X');
+                
+                if (val == 0) {
+                    *p = '0';
+                    p--;
+                } else {
+                    while (val > 0) {
+                        int digit = val & 0xF;
+                        if (digit < 10) {
+                            *p = '0' + digit;
+                        } else {
+                            *p = (use_uppercase ? 'A' : 'a') + digit - 10;
+                        }
+                        p--;
+                        val >>= 4;
+                    }
+                }
+                
+                p++;
+                /* Copy to destination */
+                while (*p) {
+                    *dst++ = *p++;
+                }
+                
+                fmt += 2;
+            } else {
+                /* Unknown format specifier, just copy */
+                *dst++ = *fmt++;
             }
-            
-            p++;
-            /* Copy to destination */
-            while (*p) {
-                *dst++ = *p++;
-            }
-            
-            fmt += 2;
         } else {
             *dst++ = *fmt++;
         }

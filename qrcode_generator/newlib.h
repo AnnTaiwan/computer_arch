@@ -70,7 +70,7 @@ void *memcpy(void *dest, const void *src, size_t n);
 
 /* I/O functions */
 int puts(const char *s);
-int sprintf(char *str, const char *format, ...);  /* Supports %d only */
+int sprintf(char *str, const char *format, ...);  /* Supports %d, %X, %x */
 
 /* ============= Utility Functions ============= */
 

@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "newlib.h"
-#define CODE_OPT_VER 2
+#define CODE_OPT_VER 3
 extern uint64_t get_cycles(void);
 extern uint64_t get_instret(void);
 
@@ -9,6 +9,7 @@ extern uint64_t get_instret(void);
 extern int generate_qrcode(void);
 extern int generate_qrcode_opt_v1(void);
 extern int generate_qrcode_opt_v2(void);
+extern int generate_qrcode_opt_v3(void);
 /* ============= Test Suite ============= */
 static void test_generate_qrcode(void)
 {
@@ -19,6 +20,8 @@ static void test_generate_qrcode(void)
     int ret = generate_qrcode_opt_v1();
 #elif CODE_OPT_VER == 2
     int ret = generate_qrcode_opt_v2();
+#elif CODE_OPT_VER == 3
+    int ret = generate_qrcode_opt_v3();
 #endif
     if(ret == 0)
     {
@@ -43,6 +46,8 @@ int main(void)
     TEST_LOGGER("Test 1: QR code (Optimize code v1, use risc-v assembly to implement _rs_mul)\n");
 #elif CODE_OPT_VER == 2
     TEST_LOGGER("Test 2: QR code (Optimize code v1, use risc-v assembly to implement _rs_mul, and exclude unnecessary mul_loop)\n");
+#elif CODE_OPT_VER == 3
+    TEST_LOGGER("Test 3: QR code (Optimize code v1, use risc-v assembly to implement _rs_mul, exclude unnecessary mul_loop, replace * / with <<  >>, and optimize _reed_solomon)\n");
 #endif
     start_cycles = get_cycles();
     start_instret = get_instret();
