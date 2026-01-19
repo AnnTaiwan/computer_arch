@@ -279,6 +279,15 @@ static inline uint _rs_mul(uint x, uint y)
 }
 
 #elif QR_OPT == 1 /* use iterative GF MUL */
+static int call_count = 0;
+static int call = 0;
+static void write_xyz(uint x, uint y, uint z)
+{
+    char msg[50];
+    sprintf(msg, "Call #%d: x=0x%X, y=0x%X, z=0x%X, count=%d\n", 
+            call, x, y, z, call_count);
+    printstr(msg, str_len(msg));
+}
 static inline uint _rs_mul(uint x, uint y)
 {
     uint z = 0;
@@ -288,6 +297,9 @@ static inline uint _rs_mul(uint x, uint y)
         z = (z << 1) ^ ((z >> 7) * 0x11D); // 0x11d = 285
         z ^= ((y >> i) & 1) * x;
     }
+    // write_xyz(x, y, z);
+    call_count += 3;
+    call++;
     return z;
 }
 #else /* QR_OPT == 2 */
@@ -352,6 +364,15 @@ static inline uint _rs_mul(uint x, uint y)
     return result;
 }
 #endif
+static void write_mul_data(volatile uint8_t *r, uint deg)
+{
+    char msg[20];
+    for(uint i = 0; i < deg; i++)
+    {
+        sprintf(msg, "ECC[%d]: 0x%X\n", i, r[i]);
+        printstr(msg, str_len(msg));
+    }
+}
 /*
  * Calculate the ECC bytes.
  */
@@ -370,6 +391,7 @@ static void _reed_solomon(qr_ctx *ctx, uint8_t *buf)
         for (uint j = 0; j < deg; j++)
             res[j] ^= _rs_mul(gen[j], factor);
     }
+    // write_mul_data(res, deg);
 }
 
 /*
@@ -474,7 +496,14 @@ static void qr_encode(qr_ctx *ctx)
     _reed_solomon(ctx, dbuf);
     _place_data(ctx, dbuf);
 }
-
+static void dump_bmp2(qr_ctx *ctx)
+{
+    char print_msg[50];
+    for (int y = 0; y < ctx->size; y++) {
+        sprintf(print_msg, "Line %d: 0x%X\n", y, ctx->bmp[y]);
+        printstr(print_msg, str_len(print_msg));
+    }
+}
 static void dump_bmp(qr_ctx *ctx)
 {
     for (int i = 0; i < ctx->size + 2; i++)
@@ -503,6 +532,7 @@ int generate_qrcode_opt_v2(void)
 {
     qr_ctx ctx[1];
     const char *str = "https://github.com/sysprog21/rv32emu";
+    // const char str[] = "hellohippo";
     // const char *str = "ffffffffffffffffffffffffffffffffff";
     // const char *str = "https://www.youtube.com/watch?v=x1v2tX4_dkQ";
 
@@ -512,5 +542,6 @@ int generate_qrcode_opt_v2(void)
     }
     qr_encode(ctx);
     dump_bmp(ctx);
+    // dump_bmp2(ctx);
     return 0;
 }
