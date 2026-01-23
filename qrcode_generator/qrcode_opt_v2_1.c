@@ -2,6 +2,11 @@
  * QR123: minimal fast QR encoder for version 1, 2, 3.
  *
  * Copyright (c) 2019 Ling LI <lix2ng@gmail.com>.
+ * Copyright (c) 2026 An Chou <ann20021007@gmail.com>.
+ *
+ * Modified by An Chou, 2026:
+ * - Implemented _rs_mul using inline RISC-V assembly (initial version)
+ * - Direct translation of C iterative algorithm to assembly
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
