@@ -279,15 +279,6 @@ static inline uint _rs_mul(uint x, uint y)
 }
 
 #elif QR_OPT == 1 /* use iterative GF MUL */
-static int call_count = 0;
-static int call = 0;
-static void write_xyz(uint x, uint y, uint z)
-{
-    char msg[50];
-    sprintf(msg, "Call #%d: x=0x%X, y=0x%X, z=0x%X, count=%d\n", 
-            call, x, y, z, call_count);
-    printstr(msg, str_len(msg));
-}
 static inline uint _rs_mul(uint x, uint y)
 {
     uint z = 0;
@@ -297,18 +288,15 @@ static inline uint _rs_mul(uint x, uint y)
         z = (z << 1) ^ ((z >> 7) * 0x11D); // 0x11d = 285
         z ^= ((y >> i) & 1) * x;
     }
-    // write_xyz(x, y, z);
-    call_count += 3;
-    call++;
     return z;
 }
 #else /* QR_OPT == 2 */
 static inline uint _rs_mul(uint x, uint y)
 {   
-    /* Reed-Solomon GF(2^8) multiplication using inline RISC-V assembly
+    /* Reed-Solomon GF(2^8) multiplication using inline assembly
      * Input: x (multiplicand), y (multiplier)
      * Output: result
-     * Algorithm matches _rs_mul (c version) when QR_OPT == 1:
+     * Algorithm matches lines 282-292:
      *   z = 0
      *   for i = 7 down to 0:
      *     z = (z << 1) ^ ((z >> 7) * 0x11D)
@@ -323,12 +311,8 @@ static inline uint _rs_mul(uint x, uint y)
         ".Lloop:\n"
         "  slli a2, t0, 1\n"      /* a2 = z << 1 */
         
-        /* Calculate (z >> 7) * 0x11D without mul_loop
-            0x11D = 0b100011101, 1 at position 0,2,3,4,8 
-            So, calculate the a3 << 2,3,4,8 and sum them.
-        */
+        /* Calculate (z >> 7) * 0x11D */
         "  srli a3, t0, 7\n"      /* a3 = z >> 7 */
-        "  beqz a3, .Lskip_mul\n" /* if (z >> 7) == 0, skip multiplication */
         "  mv a4, a3\n"           /* a4 = a3 (bit 0) */
         "  slli t3, a3, 2\n"      /* t3 = a3 << 2 (bit 2) */
         "  add a4, a4, t3\n"
@@ -338,41 +322,42 @@ static inline uint _rs_mul(uint x, uint y)
         "  add a4, a4, t3\n"
         "  slli t3, a3, 8\n"      /* t3 = a3 << 8 (bit 8) */
         "  add a4, a4, t3\n"      /* a4 = (z >> 7) * 0x11D */
+        
         "  xor t0, a2, a4\n"      /* z = (z << 1) ^ ((z >> 7) * 0x11D) */
-        "  j .Lmul_end\n"
-        ".Lskip_mul:\n"
-        "  mv t0, a2\n"             /* let t0 be (z << 1)*/
-        ".Lmul_end:\n"
-        /* Calculate ((y >> i) & 1) * x 
-            (y >> i) & 1 must be 1 or 0, so it is simple to do this multiplication
-            Just check if it is 1, if true, do the xor.
-        */
+        
+        /* Calculate ((y >> i) & 1) * x */
         "  srl a4, %2, t1\n"      /* a4 = y >> i */
         "  andi a4, a4, 1\n"      /* a4 = (y >> i) & 1 */
         
-        "  beqz a4, .Lskip_xor\n"  /* if (y >> i) & 1 == 0, skip XOR */
-        "  xor t0, t0, t6\n"       /* z ^= x */
-        ".Lskip_xor:\n"
-        "  addi t1, t1, -1\n"      /* i-- */
-        "  bgez t1, .Lloop\n"      /* if i >= 0, continue loop */
+        /* Multiply a4 * x (where x is in t6) */
+        "  li a5, 0\n"            /* result = 0 */
+        "  mv t3, t6\n"           /* t3 = x (multiplicand) */
+        "  mv t4, a4\n"           /* t4 = (y >> i) & 1 (multiplier, 0 or 1) */
         
-        "  mv %0, t0\n"            /* return z */
-        : "=r"(result)             /* Output: result */
-        : "r"(x), "r"(y)           /* Inputs: x, y */
-        : "t0", "t1", "t3", "t6", "a2", "a3", "a4"  /* Clobbered: Remind those registers will be modified */
+        ".Lmul_loop:\n"
+        "  beqz t4, .Lmul_end\n"
+        "  andi t5, t4, 1\n"
+        "  beqz t5, .Lmul_skip\n"
+        "  add a5, a5, t3\n"
+        ".Lmul_skip:\n"
+        "  slli t3, t3, 1\n"
+        "  srli t4, t4, 1\n"
+        "  j .Lmul_loop\n"
+        
+        ".Lmul_end:\n"
+        "  xor t0, t0, a5\n"      /* z ^= ((y >> i) & 1) * x */
+        
+        "  addi t1, t1, -1\n"     /* i-- */
+        "  bgez t1, .Lloop\n"     /* if i >= 0, continue loop */
+        
+        "  mv %0, t0\n"           /* return z */
+        : "=r"(result)            /* Output: result */
+        : "r"(x), "r"(y)          /* Inputs: x, y */
+        : "t0", "t1", "t3", "t4", "t5", "t6", "a2", "a3", "a4", "a5"  /* Clobbered registers */
     );
     return result;
 }
 #endif
-static void write_mul_data(volatile uint8_t *r, uint deg)
-{
-    char msg[20];
-    for(uint i = 0; i < deg; i++)
-    {
-        sprintf(msg, "ECC[%d]: 0x%X\n", i, r[i]);
-        printstr(msg, str_len(msg));
-    }
-}
 /*
  * Calculate the ECC bytes.
  */
@@ -391,7 +376,6 @@ static void _reed_solomon(qr_ctx *ctx, uint8_t *buf)
         for (uint j = 0; j < deg; j++)
             res[j] ^= _rs_mul(gen[j], factor);
     }
-    // write_mul_data(res, deg);
 }
 
 /*
@@ -496,14 +480,7 @@ static void qr_encode(qr_ctx *ctx)
     _reed_solomon(ctx, dbuf);
     _place_data(ctx, dbuf);
 }
-static void dump_bmp2(qr_ctx *ctx)
-{
-    char print_msg[50];
-    for (int y = 0; y < ctx->size; y++) {
-        sprintf(print_msg, "Line %d: 0x%X\n", y, ctx->bmp[y]);
-        printstr(print_msg, str_len(print_msg));
-    }
-}
+
 static void dump_bmp(qr_ctx *ctx)
 {
     for (int i = 0; i < ctx->size + 2; i++)
@@ -528,11 +505,10 @@ static void dump_bmp(qr_ctx *ctx)
     TEST_LOGGER("\n");
 }
 
-int generate_qrcode_opt_v2(void)
+int generate_qrcode_opt_v2_1(void)
 {
     qr_ctx ctx[1];
     const char *str = "https://github.com/sysprog21/rv32emu";
-    // const char str[] = "hellohippo";
     // const char *str = "ffffffffffffffffffffffffffffffffff";
     // const char *str = "https://www.youtube.com/watch?v=x1v2tX4_dkQ";
 
@@ -542,6 +518,5 @@ int generate_qrcode_opt_v2(void)
     }
     qr_encode(ctx);
     dump_bmp(ctx);
-    // dump_bmp2(ctx);
     return 0;
 }

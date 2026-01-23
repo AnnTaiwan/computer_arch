@@ -322,32 +322,25 @@ static inline uint _rs_mul(uint x, uint y)
         "mv t6, %1\n"             /* Save x in t6 */
         
         ".Lloop:\n"
-        "  slli a2, t0, 1\n"      /* a2 = z << 1 */
+        "  slli t0, t0, 1\n"      /* t0 = z << 1 */
         
         /* Calculate (z >> 7) * 0x11D without mul_loop
-            0x11D = 0b100011101, 1 at position 0,2,3,4,8 
-            So, calculate the a3 << 2,3,4,8 and sum them.
+            (Optional, poor performance) 
+            If doing shift-and-add multiplication (* 0x11D):
+                0x11D = 0b100011101, 1 at position 0,2,3,4,8 
+                So, calculate the a3 << 2,3,4,8 and sum them.
+            Since (z >> 7) is either 0 or 1 for 8-bit values:
+                - If (z >> 7) == 0: z = (z << 1)
+                - If (z >> 7) == 1: z = (z << 1) ^ 0x11D
         */
-        "  srli a3, t0, 7\n"      /* a3 = z >> 7 */
-        "  beqz a3, .Lskip_mul\n" /* if (z >> 7) == 0, skip multiplication */
-        "  mv a4, a3\n"           /* a4 = a3 (bit 0) */
-        "  slli t3, a3, 2\n"      /* t3 = a3 << 2 (bit 2) */
-        "  add a4, a4, t3\n"
-        "  slli t3, a3, 3\n"      /* t3 = a3 << 3 (bit 3) */
-        "  add a4, a4, t3\n"
-        "  slli t3, a3, 4\n"      /* t3 = a3 << 4 (bit 4) */
-        "  add a4, a4, t3\n"
-        "  slli t3, a3, 8\n"      /* t3 = a3 << 8 (bit 8) */
-        "  add a4, a4, t3\n"      /* a4 = (z >> 7) * 0x11D */
-        "  xor t0, a2, a4\n"      /* z = (z << 1) ^ ((z >> 7) * 0x11D) */
-        "  j .Lmul_end\n"
-        ".Lskip_mul:\n"
-        "  mv t0, a2\n"             /* let t0 be (z << 1)*/
-        ".Lmul_end:\n"
+        "  srli a3, t0, 8\n"      /* a3 = z >> 7, here shift right 8 due to t0 already shifts left 1 before */
+        "  beqz a3, .Lnext\n"     /* if (z >> 7) == 0, skip multiplication, and then go to next equation */
+        "  xori t0, t0, 0x11D\n"  /* if (z >> 7) == 1, z = (z << 1) ^ 0x11D*/
         /* Calculate ((y >> i) & 1) * x 
             (y >> i) & 1 must be 1 or 0, so it is simple to do this multiplication
             Just check if it is 1, if true, do the xor.
         */
+        ".Lnext:\n"
         "  srl a4, %2, t1\n"      /* a4 = y >> i */
         "  andi a4, a4, 1\n"      /* a4 = (y >> i) & 1 */
         
@@ -360,7 +353,7 @@ static inline uint _rs_mul(uint x, uint y)
         "  mv %0, t0\n"            /* return z */
         : "=r"(result)             /* Output: result */
         : "r"(x), "r"(y)           /* Inputs: x, y */
-        : "t0", "t1", "t3", "t6", "a2", "a3", "a4"  /* Clobbered: Remind those registers will be modified */
+        : "t0", "t1", "t6", "a3", "a4"  /* Clobbered: Remind those registers will be modified */
     );
     return result;
 }
@@ -412,6 +405,7 @@ static void _reed_solomon(qr_ctx *ctx, uint8_t *buf)
         for (uint i = 0; i < deg; i++)
             res[i] = temp[i];
     }
+    // write_mul_data(res, deg);
 }
 /*
  * Return if dot (x,y) is for data (i.e. not function patterns).

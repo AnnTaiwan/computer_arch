@@ -6,20 +6,20 @@ extern uint64_t get_instret(void);
 
 
 /* ============= Test QR code Declaration ============= */
-extern int generate_qrcode(void);
-extern int generate_qrcode_opt_v1(void);
-extern int generate_qrcode_opt_v2(void);
+extern int generate_qrcode_v01(void);
+extern int generate_qrcode_opt_v2_1(void);
+extern int generate_qrcode_opt_v2_2(void);
 extern int generate_qrcode_opt_v3(void);
 /* ============= Test Suite ============= */
 static void test_generate_qrcode(void)
 {
     TEST_LOGGER("Generate_qrcode...\n");
 #if CODE_OPT_VER == 0
-    int ret = generate_qrcode();
+    int ret = generate_qrcode_v01();
 #elif CODE_OPT_VER == 1
-    int ret = generate_qrcode_opt_v1();
+    int ret = generate_qrcode_opt_v2_1();
 #elif CODE_OPT_VER == 2
-    int ret = generate_qrcode_opt_v2();
+    int ret = generate_qrcode_opt_v2_2();
 #elif CODE_OPT_VER == 3
     int ret = generate_qrcode_opt_v3();
 #endif

@@ -439,7 +439,7 @@ void dump_bmp(qr_ctx *ctx)
     TEST_LOGGER("\n");
 }
 
-int generate_qrcode(void)
+int generate_qrcode_v01(void)
 {
     qr_ctx ctx[1];
     const char *str = "https://github.com/sysprog21/rv32emu";
